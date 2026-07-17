@@ -15,27 +15,27 @@ load_dotenv()
 
 SECRET_KEY = os.environ["JWT_SECRET_KEY"]
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # токен живе добу
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # token is valid for one day
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-# tokenUrl лише підказує Swagger UI, куди відправляти логін-форму для кнопки
-# "Authorize" — на сам ендпоінт це ніяк не впливає.
+# tokenUrl only tells Swagger UI where to send the login form for its
+# "Authorize" button — it has no effect on the endpoint itself.
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
 def get_password_hash(password: str) -> str:
-    """Рахує bcrypt-хеш пароля. Оригінальний пароль ми більше ніде не тримаємо."""
+    """Computes a bcrypt hash of the password. We never store the raw password."""
     return pwd_context.hash(password)
 
 
 def verify_password(plain_password: str, password_hash: str) -> bool:
-    """Порівнює введений пароль з хешем із бази (сам пароль не розшифровується —
-    хеш рахується ще раз і звіряється)."""
+    """Compares an input password against the stored hash (the hash is never
+    decrypted — it's recomputed from the input and compared)."""
     return pwd_context.verify(plain_password, password_hash)
 
 
 def create_access_token(user: User) -> str:
-    """Генерує JWT з user.id в полі 'sub' (subject) і часом закінчення дії."""
+    """Generates a JWT with user.id in the 'sub' (subject) claim and an expiry time."""
     expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     payload = {"sub": str(user.id), "exp": expire}
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
@@ -45,9 +45,9 @@ def get_current_user(
     token: str = Depends(oauth2_scheme),
     session: Session = Depends(get_session),
 ) -> User:
-    """FastAPI dependency: дістає токен із заголовка Authorization: Bearer <token>,
-    декодує його і повертає користувача з бази. Якщо токен невалідний,
-    протермінований або юзера вже нема в базі — 401."""
+    """FastAPI dependency: reads the token from the Authorization: Bearer <token>
+    header, decodes it, and returns the matching user from the database. Returns
+    401 if the token is invalid, expired, or the user no longer exists."""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",

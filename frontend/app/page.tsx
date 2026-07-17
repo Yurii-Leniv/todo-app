@@ -12,8 +12,12 @@ export default function Home() {
   if (!user) {
     return (
       <div className="mx-auto max-w-sm rounded-3xl border border-white/60 bg-white/80 p-10 text-center shadow-xl backdrop-blur-sm">
-        <h1 className="mb-3 text-3xl font-extrabold tracking-tight text-indigo-950">Welcome</h1>
-        <p className="mb-8 text-gray-600">Log in or sign up to manage your tasks.</p>
+        <h1 className="mb-3 text-3xl font-extrabold tracking-tight text-indigo-950">
+          Welcome
+        </h1>
+        <p className="mb-8 text-gray-600">
+          Log in or sign up to manage your tasks.
+        </p>
         <div className="flex justify-center gap-4">
           <Link
             href="/login"

@@ -9,7 +9,7 @@ type Props = {
 
 export default function SortButtons({ value, onChange }: Props) {
   function toggle(order: TaskOrder) {
-    // Повторний клік на вже активну кнопку скасовує сортування.
+    // Clicking an already-active button again clears the sort.
     onChange(value === order ? null : order);
   }
 
@@ -19,7 +19,9 @@ export default function SortButtons({ value, onChange }: Props) {
         type="button"
         onClick={() => toggle("asc")}
         className={`rounded-lg px-3.5 py-2 text-sm font-medium transition-colors ${
-          value === "asc" ? "bg-indigo-600 text-white shadow-sm" : "text-gray-600 hover:text-gray-900"
+          value === "asc"
+            ? "bg-indigo-600 text-white shadow-sm"
+            : "text-gray-600 hover:text-gray-900"
         }`}
       >
         Ascending
@@ -28,7 +30,9 @@ export default function SortButtons({ value, onChange }: Props) {
         type="button"
         onClick={() => toggle("desc")}
         className={`rounded-lg px-3.5 py-2 text-sm font-medium transition-colors ${
-          value === "desc" ? "bg-indigo-600 text-white shadow-sm" : "text-gray-600 hover:text-gray-900"
+          value === "desc"
+            ? "bg-indigo-600 text-white shadow-sm"
+            : "text-gray-600 hover:text-gray-900"
         }`}
       >
         Descending

@@ -1,0 +1,40 @@
+# Used only by the e2e-tests CI job (.github/workflows/tests.yml), not for
+# local development — see docker-compose.yml for that. The difference is
+# the network: here, the frontend and the Cypress browser both run inside
+# Docker containers on the same Compose network, so they reach the backend
+# and each other by service name (e.g. "http://backend:8000") instead of
+# "localhost".
+services:
+  backend:
+    build: ./backend
+    environment:
+      # No .env file is committed (on purpose), so CI provides this
+      # directly instead of via env_file.
+      JWT_SECRET_KEY: test-secret-key-for-ci
+    expose:
+      - "8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: http://backend:8000
+    expose:
+      - "3000"
+    depends_on:
+      - backend
+
+  cypress:
+    image: cypress/included:15.18.1
+    depends_on:
+      - frontend
+      - backend
+    environment:
+      # Overrides the "http://localhost:3000" baseUrl from cypress.config.ts,
+      # which only makes sense when Cypress runs directly on the host (as it
+      # does for local `npm run cypress:open`), not inside this network.
+      CYPRESS_baseUrl: http://frontend:3000
+    working_dir: /e2e
+    volumes:
+      - ./frontend/cypress:/e2e/cypress
+      - ./frontend/cypress.config.ts:/e2e/cypress.config.ts

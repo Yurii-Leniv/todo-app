@@ -24,10 +24,13 @@ export class ApiError extends Error {
   }
 }
 
-// Загальна обгортка над fetch: сама додає базовий URL, JSON-заголовки і,
-// якщо є токен, Authorization: Bearer <token>. Усі запити до бекенда
-// (і auth, і tasks) мають йти через неї, а не через голий fetch.
-async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
+// Generic wrapper around fetch: adds the base URL, JSON headers, and, if a
+// token exists, an Authorization: Bearer <token> header. All requests to the
+// backend (both auth and tasks) should go through this, not raw fetch.
+async function apiFetch<T>(
+  path: string,
+  options: RequestInit = {},
+): Promise<T> {
   const token = getToken();
   const headers: HeadersInit = {
     "Content-Type": "application/json",
@@ -39,12 +42,17 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
 
   if (!res.ok) {
     const body = await res.json().catch(() => null);
-    throw new ApiError(res.status, body?.detail ?? `Request failed: ${res.status}`);
+    throw new ApiError(
+      res.status,
+      body?.detail ?? `Request failed: ${res.status}`,
+    );
   }
 
   if (res.status === 204) return undefined as T;
   return res.json();
 }
+
+// --- Types describing the shape of data coming from the backend ---
 
 export type User = {
   id: number;
@@ -64,6 +72,17 @@ type AuthResponse = {
   token_type: string;
 };
 
+export type TaskStatus = "all" | "done" | "undone";
+export type TaskOrder = "asc" | "desc";
+
+export type TaskQuery = {
+  search?: string;
+  status?: TaskStatus;
+  order?: TaskOrder | null;
+};
+
+// --- /auth/* ---
+
 export function signup(email: string, password: string) {
   return apiFetch<AuthResponse>("/auth/signup", {
     method: "POST",
@@ -82,19 +101,13 @@ export function getMe() {
   return apiFetch<User>("/auth/me");
 }
 
-export type TaskStatus = "all" | "done" | "undone";
-export type TaskOrder = "asc" | "desc";
-
-export type TaskQuery = {
-  search?: string;
-  status?: TaskStatus;
-  order?: TaskOrder | null;
-};
+// --- /tasks/* ---
 
 export function listTasks(query: TaskQuery = {}) {
   const params = new URLSearchParams();
   if (query.search) params.set("search", query.search);
-  if (query.status && query.status !== "all") params.set("status", query.status);
+  if (query.status && query.status !== "all")
+    params.set("status", query.status);
   if (query.order) {
     params.set("sort", "priority");
     params.set("order", query.order);
@@ -110,7 +123,10 @@ export function createTask(title: string, priority: number) {
   });
 }
 
-export function updateTask(id: number, changes: Partial<Pick<Task, "title" | "done" | "priority">>) {
+export function updateTask(
+  id: number,
+  changes: Partial<Pick<Task, "title" | "done" | "priority">>,
+) {
   return apiFetch<Task>(`/tasks/${id}`, {
     method: "PATCH",
     body: JSON.stringify(changes),

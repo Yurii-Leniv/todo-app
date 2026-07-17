@@ -10,14 +10,20 @@ type Props = {
   onDelete: (task: Task) => void;
 };
 
-// Колір бейджа залежить від пріоритету: чим вищий, тим "тривожніший" колір.
+// Badge color depends on priority: the higher it is, the more "alarming" the color.
 function priorityBadgeClass(priority: number): string {
   if (priority >= 8) return "bg-red-100 text-red-700";
   if (priority >= 4) return "bg-amber-100 text-amber-700";
   return "bg-gray-100 text-gray-600";
 }
 
-export default function TaskItem({ task, pending, removing, onToggleDone, onDelete }: Props) {
+export default function TaskItem({
+  task,
+  pending,
+  removing,
+  onToggleDone,
+  onDelete,
+}: Props) {
   return (
     <li
       className={`flex items-center justify-between gap-4 rounded-2xl border border-white/60 bg-white/80 px-5 py-4 shadow-sm backdrop-blur-sm transition-shadow hover:shadow-lg ${
@@ -32,7 +38,9 @@ export default function TaskItem({ task, pending, removing, onToggleDone, onDele
           onChange={() => onToggleDone(task)}
           className="h-5 w-5 accent-indigo-600 disabled:opacity-50"
         />
-        <span className={`text-base ${task.done ? "text-gray-400 line-through" : "text-gray-800"}`}>
+        <span
+          className={`text-base ${task.done ? "text-gray-400 line-through" : "text-gray-800"}`}
+        >
           {task.title}
         </span>
         {pending && <span className="text-xs text-gray-400">saving...</span>}

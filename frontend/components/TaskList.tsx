@@ -9,8 +9,8 @@ import SearchBar from "./SearchBar";
 import FilterButtons from "./FilterButtons";
 import SortButtons from "./SortButtons";
 
-// Час має збігатися з transition-тривалістю .animate-task-out в globals.css,
-// інакше задача зникне зі стану раніше, ніж встигне доанімуватись.
+// Must match the transition duration of .animate-task-out in globals.css,
+// otherwise the task would leave state before the animation finishes.
 const REMOVE_ANIMATION_MS = 200;
 
 export default function TaskList() {
@@ -26,13 +26,18 @@ export default function TaskList() {
   const [removingIds, setRemovingIds] = useState<Set<number>>(new Set());
 
   useEffect(() => {
-    setLoading(true);
-    setError(null);
-    api
-      .listTasks({ search, status, order })
-      .then(setTasks)
-      .catch(() => setError("Failed to load tasks"))
-      .finally(() => setLoading(false));
+    async function fetchTasks() {
+      setLoading(true);
+      setError(null);
+      try {
+        setTasks(await api.listTasks({ search, status, order }));
+      } catch {
+        setError("Failed to load tasks");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchTasks();
   }, [search, status, order]);
 
   async function handleCreate(title: string, priority: number) {
@@ -57,8 +62,14 @@ export default function TaskList() {
   }
 
   async function handleDelete(task: Task) {
-    if (!window.confirm(`Delete "${task.title}"? This cannot be undone.`)) return;
+    if (!window.confirm(`Delete "${task.title}"? This cannot be undone.`))
+      return;
 
+    // First just mark the task as "being removed" — this triggers the
+    // disappearing CSS animation (.animate-task-out). We delay the actual
+    // DELETE request and removal from state by REMOVE_ANIMATION_MS,
+    // otherwise React would remove the element from the DOM instantly and
+    // the animation would never get to play.
     setRemovingIds((prev) => new Set(prev).add(task.id));
     setTimeout(async () => {
       try {
@@ -87,7 +98,9 @@ export default function TaskList() {
         </div>
       </div>
 
-      {error && <p className="mb-4 text-sm font-medium text-red-600">{error}</p>}
+      {error && (
+        <p className="mb-4 text-sm font-medium text-red-600">{error}</p>
+      )}
 
       {loading ? (
         <p className="text-sm text-gray-500">Loading...</p>

@@ -14,7 +14,12 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: linear-gradient(160deg, #17172b 0%, #1b1830 45%, #221a2e 100%);
+    --background: linear-gradient(
+      160deg,
+      #17172b 0%,
+      #1b1830 45%,
+      #221a2e 100%
+    );
     --foreground: #ededed;
   }
 }
@@ -44,5 +49,7 @@ body {
 .animate-task-out {
   opacity: 0;
   transform: scale(0.97);
-  transition: opacity 0.2s ease-in, transform 0.2s ease-in;
+  transition:
+    opacity 0.2s ease-in,
+    transform 0.2s ease-in;
 }

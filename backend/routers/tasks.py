@@ -43,7 +43,9 @@ def list_tasks(
         query = query.where(Task.done.is_(False))
 
     if sort == "priority":
-        query = query.order_by(Task.priority.desc() if order == "desc" else Task.priority.asc())
+        query = query.order_by(
+            Task.priority.desc() if order == "desc" else Task.priority.asc()
+        )
 
     return session.exec(query).all()
 
@@ -59,8 +61,8 @@ def update_task(
     if not db_task or db_task.user_id != user.id:
         raise HTTPException(status_code=404, detail="Task not found")
 
-    # exclude_unset=True — беремо лише ті поля, які клієнт реально надіслав,
-    # щоб випадково не затерти інші поля значенням None.
+    # exclude_unset=True — only take fields the client actually sent, so we
+    # don't accidentally overwrite the other fields with None.
     update_data = task_update.model_dump(exclude_unset=True)
     for key, value in update_data.items():
         setattr(db_task, key, value)

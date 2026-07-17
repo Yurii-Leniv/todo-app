@@ -1,7 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, SQLModel, select
 
-from auth import create_access_token, get_current_user, get_password_hash, verify_password
+from auth import (
+    create_access_token,
+    get_current_user,
+    get_password_hash,
+    verify_password,
+)
 from database import get_session
 from models import User, UserCreate, UserRead
 
@@ -9,7 +14,7 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 class Token(SQLModel):
-    """Що повертають /auth/signup і /auth/login клієнту."""
+    """What /auth/signup and /auth/login return to the client."""
 
     access_token: str
     token_type: str = "bearer"

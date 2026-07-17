@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
 import * as api from "./api";
 import { User } from "./api";
 
@@ -16,21 +22,26 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  // Поки триває перевірка токена при першому завантаженні сторінки — щоб
-  // на мить не показати "не залогінений" тим, хто насправді залогінений.
+  // True while the token is being checked on first page load — avoids
+  // flashing "not logged in" for a moment to users who actually are.
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = api.getToken();
-    if (!token) {
-      setLoading(false);
-      return;
+    async function restoreSession() {
+      const token = api.getToken();
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+      try {
+        setUser(await api.getMe());
+      } catch {
+        api.clearToken();
+      } finally {
+        setLoading(false);
+      }
     }
-    api
-      .getMe()
-      .then(setUser)
-      .catch(() => api.clearToken())
-      .finally(() => setLoading(false));
+    restoreSession();
   }, []);
 
   async function login(email: string, password: string) {

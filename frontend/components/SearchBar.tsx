@@ -6,7 +6,7 @@ type Props = {
   onSearch: (value: string) => void;
 };
 
-// Затримка перед відправкою запиту після того, як юзер перестав друкувати.
+// Delay before firing the search request after the user stops typing.
 const DEBOUNCE_MS = 300;
 
 export default function SearchBar({ onSearch }: Props) {
@@ -15,6 +15,9 @@ export default function SearchBar({ onSearch }: Props) {
   useEffect(() => {
     const timer = setTimeout(() => onSearch(value), DEBOUNCE_MS);
     return () => clearTimeout(timer);
+    // onSearch is intentionally left out of the deps: if the parent passes a
+    // new function on every render, adding it here would restart the timer
+    // on every render instead of only when the search text changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 

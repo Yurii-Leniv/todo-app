@@ -30,10 +30,15 @@ export default function LoginPage() {
 
   return (
     <div className="mx-auto max-w-sm rounded-3xl border border-white/60 bg-white/80 p-8 shadow-xl backdrop-blur-sm">
-      <h1 className="mb-6 text-2xl font-extrabold tracking-tight text-indigo-950">Log In</h1>
+      <h1 className="mb-6 text-2xl font-extrabold tracking-tight text-indigo-950">
+        Log In
+      </h1>
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="email"
+            className="mb-1.5 block text-sm font-medium text-gray-700"
+          >
             Email
           </label>
           <input
@@ -46,7 +51,10 @@ export default function LoginPage() {
           />
         </div>
         <div>
-          <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="password"
+            className="mb-1.5 block text-sm font-medium text-gray-700"
+          >
             Password
           </label>
           <input
@@ -69,7 +77,10 @@ export default function LoginPage() {
       </form>
       <p className="mt-5 text-sm text-gray-600">
         Don&apos;t have an account?{" "}
-        <Link href="/signup" className="font-medium text-indigo-600 hover:underline">
+        <Link
+          href="/signup"
+          className="font-medium text-indigo-600 hover:underline"
+        >
           Sign Up
         </Link>
       </p>
