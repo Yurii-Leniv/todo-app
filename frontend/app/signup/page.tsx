@@ -29,11 +29,11 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="mx-auto max-w-sm">
-      <h1 className="mb-6 text-2xl font-semibold">Sign Up</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="mx-auto max-w-sm rounded-3xl border border-white/60 bg-white/80 p-8 shadow-xl backdrop-blur-sm">
+      <h1 className="mb-6 text-2xl font-extrabold tracking-tight text-indigo-950">Sign Up</h1>
+      <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <label htmlFor="email" className="mb-1 block text-sm font-medium text-gray-700">
+          <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-gray-700">
             Email
           </label>
           <input
@@ -42,11 +42,11 @@ export default function SignupPage() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+            className="w-full rounded-xl border border-gray-300 px-4 py-2.5 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
           />
         </div>
         <div>
-          <label htmlFor="password" className="mb-1 block text-sm font-medium text-gray-700">
+          <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-gray-700">
             Password
           </label>
           <input
@@ -56,21 +56,21 @@ export default function SignupPage() {
             minLength={8}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+            className="w-full rounded-xl border border-gray-300 px-4 py-2.5 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
           />
         </div>
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm font-medium text-red-600">{error}</p>}
         <button
           type="submit"
           disabled={submitting}
-          className="w-full rounded-md bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+          className="w-full rounded-xl bg-indigo-600 px-4 py-2.5 font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-50"
         >
           {submitting ? "Signing up..." : "Sign Up"}
         </button>
       </form>
-      <p className="mt-4 text-sm text-gray-600">
+      <p className="mt-5 text-sm text-gray-600">
         Already have an account?{" "}
-        <Link href="/login" className="text-blue-600 hover:underline">
+        <Link href="/login" className="font-medium text-indigo-600 hover:underline">
           Log In
         </Link>
       </p>

@@ -82,8 +82,25 @@ export function getMe() {
   return apiFetch<User>("/auth/me");
 }
 
-export function listTasks() {
-  return apiFetch<Task[]>("/tasks");
+export type TaskStatus = "all" | "done" | "undone";
+export type TaskOrder = "asc" | "desc";
+
+export type TaskQuery = {
+  search?: string;
+  status?: TaskStatus;
+  order?: TaskOrder | null;
+};
+
+export function listTasks(query: TaskQuery = {}) {
+  const params = new URLSearchParams();
+  if (query.search) params.set("search", query.search);
+  if (query.status && query.status !== "all") params.set("status", query.status);
+  if (query.order) {
+    params.set("sort", "priority");
+    params.set("order", query.order);
+  }
+  const qs = params.toString();
+  return apiFetch<Task[]>(`/tasks${qs ? `?${qs}` : ""}`);
 }
 
 export function createTask(title: string, priority: number) {

@@ -31,11 +31,13 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <AuthProvider>
-          <header className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-            <span className="font-semibold">Todo App</span>
+          <header className="flex items-center justify-between border-b border-white/60 bg-white/70 px-8 py-5 shadow-sm backdrop-blur-md">
+            <span className="text-xl font-extrabold tracking-tight text-indigo-950">
+              Todo App
+            </span>
             <UserInfo />
           </header>
-          <main className="flex-1 px-6 py-8">{children}</main>
+          <main className="flex-1 px-6 py-10">{children}</main>
         </AuthProvider>
       </body>
     </html>

@@ -1,3 +1,5 @@
+from typing import Literal, Optional
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 
@@ -23,10 +25,27 @@ def create_task(
 
 @router.get("", response_model=list[TaskRead])
 def list_tasks(
+    search: Optional[str] = None,
+    status: Optional[Literal["done", "undone"]] = None,
+    sort: Optional[Literal["priority"]] = None,
+    order: Literal["asc", "desc"] = "asc",
     session: Session = Depends(get_session),
     user: User = Depends(get_current_user),
 ):
-    return session.exec(select(Task).where(Task.user_id == user.id)).all()
+    query = select(Task).where(Task.user_id == user.id)
+
+    if search:
+        query = query.where(Task.title.ilike(f"%{search}%"))
+
+    if status == "done":
+        query = query.where(Task.done.is_(True))
+    elif status == "undone":
+        query = query.where(Task.done.is_(False))
+
+    if sort == "priority":
+        query = query.order_by(Task.priority.desc() if order == "desc" else Task.priority.asc())
+
+    return session.exec(query).all()
 
 
 @router.patch("/{task_id}", response_model=TaskRead)
