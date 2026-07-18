@@ -16,17 +16,23 @@ describe("Task management", () => {
 
     cy.contains("li", "Buy milk").find("input[type=checkbox]").click();
 
-    cy.contains("Buy milk").should("have.class", "line-through");
+    cy.contains("li", "Buy milk")
+      .find("span.text-base")
+      .should("have.class", "line-through");
   });
 
   it("keeps a completed task marked done after a page reload", () => {
     cy.get("input[placeholder='New task...']").type("Buy milk{enter}");
     cy.contains("li", "Buy milk").find("input[type=checkbox]").click();
-    cy.contains("Buy milk").should("have.class", "line-through");
+    cy.contains("li", "Buy milk")
+      .find("span.text-base")
+      .should("have.class", "line-through");
 
     cy.reload();
 
-    cy.contains("Buy milk").should("have.class", "line-through");
+    cy.contains("li", "Buy milk")
+      .find("span.text-base")
+      .should("have.class", "line-through");
   });
 
   it("deletes a task after accepting the confirm dialog", () => {
@@ -54,7 +60,9 @@ describe("Task management", () => {
     cy.get("input[placeholder='New task...']").type("Buy milk{enter}");
     cy.get("input[placeholder='New task...']").type("Clean house{enter}");
     cy.contains("li", "Buy milk").find("input[type=checkbox]").click();
-    cy.contains("Buy milk").should("have.class", "line-through");
+    cy.contains("li", "Buy milk")
+      .find("span.text-base")
+      .should("have.class", "line-through");
 
     cy.contains("button", "Done").click();
     cy.contains("Buy milk");

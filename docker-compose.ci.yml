@@ -5,6 +5,7 @@ services:
     build: ./backend
     environment:
       JWT_SECRET_KEY: test-secret-key-for-ci
+      CORS_ORIGINS: http://frontend:3000
     expose:
       - "8000"
 
@@ -29,3 +30,4 @@ services:
     volumes:
       - ./frontend/cypress:/e2e/cypress
       - ./frontend/cypress.config.ts:/e2e/cypress.config.ts
+      - ./frontend/tsconfig.json:/e2e/tsconfig.json
