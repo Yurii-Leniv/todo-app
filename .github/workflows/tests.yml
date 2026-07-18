@@ -48,10 +48,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Builds the backend and frontend images, starts both plus a
-      # cypress/included container on a shared Docker network, and fails
-      # the step if the Cypress run itself fails (not just if any
-      # container happens to exit non-zero).
       - name: Run E2E tests
         run: |
           docker compose -f docker-compose.ci.yml up \

@@ -12,10 +12,6 @@ services:
     build:
       context: ./frontend
       args:
-        # The browser runs on your host machine, not inside Docker's
-        # network, so it reaches the backend via the port published above —
-        # not via the "backend" service name (that only works
-        # container-to-container, see docker-compose.ci.yml for that case).
         NEXT_PUBLIC_API_URL: http://localhost:8000
     ports:
       - "3000:3000"

@@ -65,11 +65,6 @@ export default function TaskList() {
     if (!window.confirm(`Delete "${task.title}"? This cannot be undone.`))
       return;
 
-    // First just mark the task as "being removed" — this triggers the
-    // disappearing CSS animation (.animate-task-out). We delay the actual
-    // DELETE request and removal from state by REMOVE_ANIMATION_MS,
-    // otherwise React would remove the element from the DOM instantly and
-    // the animation would never get to play.
     setRemovingIds((prev) => new Set(prev).add(task.id));
     setTimeout(async () => {
       try {

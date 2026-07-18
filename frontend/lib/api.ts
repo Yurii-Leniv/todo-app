@@ -24,9 +24,6 @@ export class ApiError extends Error {
   }
 }
 
-// Generic wrapper around fetch: adds the base URL, JSON headers, and, if a
-// token exists, an Authorization: Bearer <token> header. All requests to the
-// backend (both auth and tasks) should go through this, not raw fetch.
 async function apiFetch<T>(
   path: string,
   options: RequestInit = {},
@@ -51,8 +48,6 @@ async function apiFetch<T>(
   if (res.status === 204) return undefined as T;
   return res.json();
 }
-
-// --- Types describing the shape of data coming from the backend ---
 
 export type User = {
   id: number;
@@ -81,8 +76,6 @@ export type TaskQuery = {
   order?: TaskOrder | null;
 };
 
-// --- /auth/* ---
-
 export function signup(email: string, password: string) {
   return apiFetch<AuthResponse>("/auth/signup", {
     method: "POST",
@@ -100,8 +93,6 @@ export function login(email: string, password: string) {
 export function getMe() {
   return apiFetch<User>("/auth/me");
 }
-
-// --- /tasks/* ---
 
 export function listTasks(query: TaskQuery = {}) {
   const params = new URLSearchParams();

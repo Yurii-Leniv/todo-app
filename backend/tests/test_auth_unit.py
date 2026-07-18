@@ -1,6 +1,3 @@
-"""Unit tests for the pure functions in auth.py — no HTTP client or database
-involved, just the password hashing and JWT logic in isolation."""
-
 from datetime import timedelta
 
 from jose import jwt
@@ -17,8 +14,6 @@ from models import User
 
 
 def test_password_hash_is_not_the_plain_password():
-    """The whole point of hashing is that the stored value never equals the
-    original password, even though we can still verify against it."""
     password = "supersecret123"
 
     assert get_password_hash(password) != password
@@ -38,9 +33,6 @@ def test_verify_password_rejects_a_wrong_password():
 
 
 def test_hashing_the_same_password_twice_gives_different_hashes():
-    """bcrypt salts every hash randomly, so two hashes of the same password
-    should never be identical — this is what makes a stolen password_hash
-    column useless for pre-computed rainbow-table attacks."""
     password = "supersecret123"
 
     assert get_password_hash(password) != get_password_hash(password)
@@ -56,8 +48,6 @@ def test_create_access_token_contains_the_user_id():
 
 
 def test_create_access_token_expires_after_the_configured_duration(mocker):
-    """Uses pytest-mock to freeze 'now' so we can assert the exact expiry
-    timestamp, instead of a loose 'is it somewhere in the future' check."""
     from datetime import datetime, timezone
 
     frozen_now = datetime(2030, 1, 1, tzinfo=timezone.utc)

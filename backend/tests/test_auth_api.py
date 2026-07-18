@@ -1,8 +1,3 @@
-"""Integration tests for /auth/* — these go through the full FastAPI request
-pipeline (routing, request validation, DB access) via TestClient, instead of
-calling Python functions directly."""
-
-
 def test_signup_returns_a_bearer_token(client):
     response = client.post(
         "/auth/signup",

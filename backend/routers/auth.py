@@ -14,8 +14,6 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 class Token(SQLModel):
-    """What /auth/signup and /auth/login return to the client."""
-
     access_token: str
     token_type: str = "bearer"
 

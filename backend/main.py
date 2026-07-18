@@ -10,8 +10,6 @@ from routers.tasks import router as tasks_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Runs once at startup: creates tasks.db and its tables if they
-    # don't exist yet.
     create_db_and_tables()
     yield
 

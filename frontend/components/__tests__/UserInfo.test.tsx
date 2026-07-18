@@ -3,9 +3,6 @@ import userEvent from "@testing-library/user-event";
 import UserInfo from "../UserInfo";
 import { useAuth } from "@/lib/auth-context";
 
-// UserInfo reads auth state via useAuth(), so we mock the whole module and
-// control what that hook returns in each test instead of rendering a real
-// AuthProvider (which would need a backend to talk to).
 jest.mock("@/lib/auth-context", () => ({
   useAuth: jest.fn(),
 }));

@@ -30,11 +30,6 @@ describe("Task management", () => {
   });
 
   it("deletes a task after accepting the confirm dialog", () => {
-    // TaskList calls window.confirm() before deleting. Cypress auto-accepts
-    // confirm() dialogs by default, so no extra handling is needed here —
-    // this is one of the few things genuinely simpler in Cypress than in a
-    // plain Playwright/Puppeteer script, which requires an explicit
-    // page.on('dialog', ...) handler.
     cy.get("input[placeholder='New task...']").type("Buy milk{enter}");
     cy.contains("Buy milk");
 

@@ -35,8 +35,6 @@ describe("TaskForm", () => {
     const onCreate = jest.fn();
     render(<TaskForm onCreate={onCreate} />);
 
-    // The title input is `required`, so clicking Add with it empty must not
-    // call onCreate — the browser's own HTML5 validation blocks the submit.
     await user.click(screen.getByRole("button", { name: "Add" }));
 
     expect(onCreate).not.toHaveBeenCalled();

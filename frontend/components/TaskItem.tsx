@@ -10,7 +10,6 @@ type Props = {
   onDelete: (task: Task) => void;
 };
 
-// Badge color depends on priority: the higher it is, the more "alarming" the color.
 function priorityBadgeClass(priority: number): string {
   if (priority >= 8) return "bg-red-100 text-red-700";
   if (priority >= 4) return "bg-amber-100 text-amber-700";

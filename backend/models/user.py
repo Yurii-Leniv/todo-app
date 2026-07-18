@@ -14,9 +14,6 @@ def _utcnow() -> datetime:
 
 
 class User(SQLModel, table=True):
-    """The actual users table. We never store the raw password —
-    only password_hash, computed by auth.py."""
-
     __tablename__ = "users"
 
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -28,15 +25,11 @@ class User(SQLModel, table=True):
 
 
 class UserCreate(SQLModel):
-    """What the client sends to /auth/signup and /auth/login."""
-
     email: str
     password: str = Field(min_length=8)
 
 
 class UserRead(SQLModel):
-    """What we return from GET /auth/me. No password_hash — that's intentional."""
-
     id: int
     email: str
     created_at: datetime

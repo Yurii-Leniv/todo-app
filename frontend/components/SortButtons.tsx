@@ -9,7 +9,6 @@ type Props = {
 
 export default function SortButtons({ value, onChange }: Props) {
   function toggle(order: TaskOrder) {
-    // Clicking an already-active button again clears the sort.
     onChange(value === order ? null : order);
   }
 

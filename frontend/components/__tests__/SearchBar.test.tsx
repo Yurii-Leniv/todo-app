@@ -10,8 +10,6 @@ describe("SearchBar", () => {
 
     await user.type(screen.getByPlaceholderText("Search tasks..."), "milk");
 
-    // The debounce timer (300ms) hasn't fired yet, so no call should have
-    // gone out — this is the whole point of debouncing the search input.
     expect(onSearch).not.toHaveBeenCalled();
   });
 

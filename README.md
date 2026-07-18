@@ -45,9 +45,11 @@ A few choices worth explaining, especially if you're new to the codebase:
 
 ## Getting Started
 
+Two ways to run this locally: install Python and Node yourself (below), or skip straight to [Running with Docker](#running-with-docker) and let Docker Compose handle both.
+
 ### Prerequisites
 
-- Python 3.14+ (see `backend/venv` — that's what this project was built and tested against)
+- Python 3.14+
 - Node.js 20+
 - Git
 - [Docker](https://www.docker.com/) (optional — only needed if you'd rather skip the local Python/Node setup below; see [Running with Docker](#running-with-docker))
@@ -162,7 +164,7 @@ npm run cypress:open   # interactive
 npm run cypress:run    # headless
 ```
 
-Every push also runs the full suite automatically via [GitHub Actions](.github/workflows/tests.yml) — backend tests, frontend unit tests, and Cypress E2E tests all run in CI.
+Every push also runs the full suite automatically via [GitHub Actions](.github/workflows/tests.yml) — backend tests, frontend unit tests, and Cypress E2E tests all run inside Docker containers built from the same `Dockerfile`s described above, so CI runs in the same environment `docker compose up` does.
 
 ## Links
 

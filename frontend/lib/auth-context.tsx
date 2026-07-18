@@ -22,8 +22,6 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  // True while the token is being checked on first page load — avoids
-  // flashing "not logged in" for a moment to users who actually are.
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

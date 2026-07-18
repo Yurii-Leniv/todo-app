@@ -1,7 +1,3 @@
-"""Integration tests for /tasks/* — covers CRUD, search/filter/sort, auth
-enforcement, and cross-user data isolation."""
-
-
 def test_list_tasks_without_a_token_is_rejected(client):
     response = client.get("/tasks")
 
@@ -19,7 +15,6 @@ def test_create_task_returns_the_created_task(client, auth_headers):
     assert body["priority"] == 3
     assert body["done"] is False
     assert "id" in body
-    # TaskRead must never leak the internal user_id foreign key.
     assert "user_id" not in body
 
 
@@ -38,8 +33,6 @@ def test_create_task_with_priority_out_of_range_is_rejected(client, auth_headers
 
 
 def test_list_tasks_returns_only_the_current_users_tasks(client, auth_headers):
-    """The core multi-user guarantee: one user must never see another
-    user's tasks in a plain list call."""
     client.post(
         "/tasks", json={"title": "My task", "priority": 5}, headers=auth_headers
     )
@@ -139,7 +132,6 @@ def test_cannot_update_another_users_task(client, auth_headers):
         "/tasks", json={"title": "Their task", "priority": 5}, headers=other_headers
     ).json()
 
-    # 404, not 403 — we don't want to reveal that the task exists at all.
     response = client.patch(
         f"/tasks/{their_task['id']}", json={"done": True}, headers=auth_headers
     )

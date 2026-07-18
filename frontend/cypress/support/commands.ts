@@ -1,10 +1,7 @@
-// Augmenting Cypress's own global Chainable interface is the documented way
-// to add typed custom commands — there's no ES-module equivalent for it.
 declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
+  // eslint-disable-next-line @typescript-eslint/no-namespace -- required by Cypress's own typing convention
   namespace Cypress {
     interface Chainable {
-      /** Signs up a fresh user through the real UI and lands on the (empty) task list. */
       signup(email: string, password: string): Chainable<void>;
     }
   }
