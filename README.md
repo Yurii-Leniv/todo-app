@@ -166,10 +166,33 @@ npm run cypress:run    # headless
 
 Every push also runs the full suite automatically via [GitHub Actions](.github/workflows/tests.yml) — backend tests, frontend unit tests, and Cypress E2E tests all run inside Docker containers built from the same `Dockerfile`s described above, so CI runs in the same environment `docker compose up` does.
 
+## Deployment
+
+Backend on [Render](https://render.com/), frontend on [Vercel](https://vercel.com/) — both have generous free tiers and deploy straight from this GitHub repo. Deploy the backend first; the frontend needs its URL.
+
+### 1. Backend → Render
+
+1. In the Render dashboard: **New → Blueprint**, connect this repo. Render reads [`render.yaml`](render.yaml) and configures the service automatically (Docker build from `backend/Dockerfile`, a random `JWT_SECRET_KEY`).
+2. Render will ask you to fill in `CORS_ORIGINS` — leave it as `http://localhost:3000` for now, you'll update it in step 3.
+3. Deploy, then note the service URL Render gives you (something like `https://todo-backend-xxxx.onrender.com`).
+
+**Known limitation:** SQLite lives inside the container's filesystem, which Render's free tier doesn't persist across restarts/redeploys — fine for a demo, but don't rely on it for real data without adding a paid persistent disk.
+
+### 2. Frontend → Vercel
+
+1. **New Project** in Vercel, import this repo.
+2. Set **Root Directory** to `frontend` (this repo has both apps side by side — Vercel needs to know which one to build).
+3. Add an environment variable: `NEXT_PUBLIC_API_URL` = your Render URL from step 1.
+4. Deploy. Vercel gives you a URL like `https://your-app.vercel.app`.
+
+### 3. Connect them
+
+Back in Render, set the backend's `CORS_ORIGINS` env var to your Vercel URL from step 2, then redeploy the backend (Render redeploys automatically when you save an env var change).
+
 ## Links
 
-- **Live app:** not deployed yet — for now, this is a local-only project (see [Getting Started](#getting-started)).
-- **API docs (Swagger UI):** once the backend is running locally, available at [http://localhost:8000/docs](http://localhost:8000/docs).
+- **Live app:** _add your deployed Vercel URL here once you've completed the steps above_.
+- **API docs (Swagger UI):** once the backend is running (locally or deployed), available at `/docs` on whichever URL it's running on — e.g. [http://localhost:8000/docs](http://localhost:8000/docs) locally.
 
 ## Acknowledgments & Authors
 
