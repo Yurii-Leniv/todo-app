@@ -165,3 +165,50 @@ def test_cannot_delete_another_users_task(client, auth_headers):
     response = client.delete(f"/tasks/{their_task['id']}", headers=auth_headers)
 
     assert response.status_code == 404
+
+
+def test_delete_completed_removes_only_done_tasks(client, auth_headers):
+    done = client.post(
+        "/tasks", json={"title": "Done task", "priority": 5}, headers=auth_headers
+    ).json()
+    client.post(
+        "/tasks", json={"title": "Still todo", "priority": 5}, headers=auth_headers
+    )
+    client.patch(f"/tasks/{done['id']}", json={"done": True}, headers=auth_headers)
+
+    response = client.delete("/tasks/completed", headers=auth_headers)
+
+    assert response.status_code == 200
+    assert response.json() == {"ok": True, "deleted": 1}
+    titles = [
+        task["title"] for task in client.get("/tasks", headers=auth_headers).json()
+    ]
+    assert titles == ["Still todo"]
+
+
+def test_delete_completed_only_affects_current_user(client, auth_headers):
+    mine = client.post(
+        "/tasks", json={"title": "My done", "priority": 5}, headers=auth_headers
+    ).json()
+    client.patch(f"/tasks/{mine['id']}", json={"done": True}, headers=auth_headers)
+
+    other_user = client.post(
+        "/auth/signup",
+        json={"email": "other@example.com", "password": "password123"},
+    ).json()
+    other_headers = {"Authorization": f"Bearer {other_user['access_token']}"}
+    theirs = client.post(
+        "/tasks", json={"title": "Their done", "priority": 5}, headers=other_headers
+    ).json()
+    client.patch(f"/tasks/{theirs['id']}", json={"done": True}, headers=other_headers)
+
+    client.delete("/tasks/completed", headers=auth_headers)
+
+    other_titles = [
+        task["title"] for task in client.get("/tasks", headers=other_headers).json()
+    ]
+    assert other_titles == ["Their done"]
+
+
+def test_delete_completed_without_a_token_is_rejected(client):
+    assert client.delete("/tasks/completed").status_code == 401

@@ -73,6 +73,22 @@ def update_task(
     return db_task
 
 
+# Declared before the /{task_id} route: otherwise FastAPI would try to parse
+# "completed" as the int task_id and reject the request with 422.
+@router.delete("/completed")
+def delete_completed_tasks(
+    session: Session = Depends(get_session),
+    user: User = Depends(get_current_user),
+):
+    completed = session.exec(
+        select(Task).where(Task.user_id == user.id, Task.done.is_(True))
+    ).all()
+    for task in completed:
+        session.delete(task)
+    session.commit()
+    return {"ok": True, "deleted": len(completed)}
+
+
 @router.delete("/{task_id}")
 def delete_task(
     task_id: int,

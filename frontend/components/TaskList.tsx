@@ -81,13 +81,26 @@ export default function TaskList() {
     }, REMOVE_ANIMATION_MS);
   }
 
+  async function handleClearCompleted() {
+    if (!window.confirm("Delete all completed tasks? This cannot be undone."))
+      return;
+    try {
+      await api.deleteCompletedTasks();
+      setTasks((prev) => prev.filter((t) => !t.done));
+    } catch {
+      setError("Failed to delete completed tasks");
+    }
+  }
+
+  const hasCompleted = tasks.some((task) => task.done);
+
   return (
     <div className="mx-auto max-w-2xl">
       <TaskForm onCreate={handleCreate} />
 
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <SearchBar onSearch={setSearch} />
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <FilterButtons value={status} onChange={setStatus} />
           <SortButtons value={order} onChange={setOrder} />
         </div>
@@ -95,6 +108,17 @@ export default function TaskList() {
 
       {error && (
         <p className="mb-4 text-sm font-medium text-red-600">{error}</p>
+      )}
+
+      {hasCompleted && (
+        <div className="mb-3 flex justify-end">
+          <button
+            onClick={handleClearCompleted}
+            className="rounded-lg px-3 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 hover:text-red-800"
+          >
+            Clear completed
+          </button>
+        </div>
       )}
 
       {loading ? (

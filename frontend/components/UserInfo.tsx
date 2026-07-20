@@ -8,11 +8,11 @@ export default function UserInfo() {
   if (!user) return null;
 
   return (
-    <div className="flex items-center gap-4 text-sm">
-      <span className="text-gray-600">{user.email}</span>
+    <div className="flex min-w-0 items-center gap-2 text-sm sm:gap-4">
+      <span className="truncate text-gray-600">{user.email}</span>
       <button
         onClick={logout}
-        className="rounded-lg border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 transition-colors hover:bg-gray-50"
+        className="shrink-0 whitespace-nowrap rounded-lg border border-gray-300 bg-white px-3 py-2 font-medium text-gray-700 transition-colors hover:bg-gray-50 sm:px-4"
       >
         Log Out
       </button>

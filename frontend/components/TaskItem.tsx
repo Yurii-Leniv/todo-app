@@ -25,26 +25,28 @@ export default function TaskItem({
 }: Props) {
   return (
     <li
-      className={`flex items-center justify-between gap-4 rounded-2xl border border-white/60 bg-white/80 px-5 py-4 shadow-sm backdrop-blur-sm transition-shadow hover:shadow-lg ${
+      className={`flex items-center justify-between gap-3 rounded-2xl border border-white/60 bg-white/80 px-4 py-3 shadow-sm backdrop-blur-sm transition-shadow hover:shadow-lg sm:gap-4 sm:px-5 sm:py-4 ${
         removing ? "animate-task-out" : "animate-task-in"
       }`}
     >
-      <label className="flex flex-1 items-center gap-4">
+      <label className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
         <input
           type="checkbox"
           checked={task.done}
           disabled={pending}
           onChange={() => onToggleDone(task)}
-          className="h-5 w-5 accent-indigo-600 disabled:opacity-50"
+          className="h-5 w-5 shrink-0 accent-indigo-600 disabled:opacity-50"
         />
         <span
-          className={`text-base ${task.done ? "text-gray-400 line-through" : "text-gray-800"}`}
+          className={`min-w-0 break-words text-base ${task.done ? "text-gray-400 line-through" : "text-gray-800"}`}
         >
           {task.title}
         </span>
-        {pending && <span className="text-xs text-gray-400">saving...</span>}
+        {pending && (
+          <span className="shrink-0 text-xs text-gray-400">saving...</span>
+        )}
         <span
-          className={`ml-auto rounded-full px-3 py-1 text-xs font-semibold ${priorityBadgeClass(task.priority)}`}
+          className={`ml-auto shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${priorityBadgeClass(task.priority)}`}
         >
           P{task.priority}
         </span>
@@ -52,7 +54,7 @@ export default function TaskItem({
       <button
         onClick={() => onDelete(task)}
         disabled={removing}
-        className="text-sm font-semibold text-red-600 hover:text-red-800 hover:underline disabled:opacity-50"
+        className="shrink-0 text-sm font-semibold text-red-600 hover:text-red-800 hover:underline disabled:opacity-50"
       >
         Delete
       </button>

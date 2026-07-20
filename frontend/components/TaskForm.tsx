@@ -27,7 +27,7 @@ export default function TaskForm({ onCreate }: Props) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="mb-8 flex gap-3 rounded-2xl border border-white/60 bg-white/80 p-4 shadow-md backdrop-blur-sm"
+      className="mb-8 flex flex-wrap gap-3 rounded-2xl border border-white/60 bg-white/80 p-4 shadow-md backdrop-blur-sm sm:flex-nowrap"
     >
       <input
         type="text"
@@ -35,7 +35,7 @@ export default function TaskForm({ onCreate }: Props) {
         required
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        className="flex-1 rounded-xl border border-gray-300 px-4 py-3 text-base transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+        className="w-full rounded-xl border border-gray-300 px-4 py-3 text-base transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 sm:w-auto sm:flex-1"
       />
       <input
         type="number"
@@ -44,12 +44,12 @@ export default function TaskForm({ onCreate }: Props) {
         value={priority}
         onChange={(e) => setPriority(Number(e.target.value))}
         title="Priority (1-10)"
-        className="w-24 rounded-xl border border-gray-300 px-4 py-3 text-base transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+        className="w-20 rounded-xl border border-gray-300 px-4 py-3 text-base transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 sm:w-24"
       />
       <button
         type="submit"
         disabled={submitting}
-        className="rounded-xl bg-indigo-600 px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-50"
+        className="flex-1 rounded-xl bg-indigo-600 px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-50 sm:flex-none"
       >
         {submitting ? "Adding..." : "Add"}
       </button>

@@ -127,3 +127,9 @@ export function updateTask(
 export function deleteTask(id: number) {
   return apiFetch<void>(`/tasks/${id}`, { method: "DELETE" });
 }
+
+export function deleteCompletedTasks() {
+  return apiFetch<{ ok: boolean; deleted: number }>("/tasks/completed", {
+    method: "DELETE",
+  });
+}
