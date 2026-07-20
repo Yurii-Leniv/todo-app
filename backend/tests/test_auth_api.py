@@ -91,3 +91,32 @@ def test_me_with_a_garbage_token_is_rejected(client):
     )
 
     assert response.status_code == 401
+
+
+def test_login_is_case_insensitive_for_email(client):
+    client.post(
+        "/auth/signup",
+        json={"email": "Alice@Example.com", "password": "password123"},
+    )
+
+    response = client.post(
+        "/auth/login",
+        json={"email": "alice@example.COM", "password": "password123"},
+    )
+
+    assert response.status_code == 200
+    assert "access_token" in response.json()
+
+
+def test_signup_duplicate_email_is_rejected_regardless_of_case(client):
+    client.post(
+        "/auth/signup",
+        json={"email": "alice@example.com", "password": "password123"},
+    )
+
+    response = client.post(
+        "/auth/signup",
+        json={"email": "ALICE@EXAMPLE.COM", "password": "password123"},
+    )
+
+    assert response.status_code == 400

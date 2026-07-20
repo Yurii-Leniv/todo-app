@@ -18,13 +18,20 @@ class Token(SQLModel):
     token_type: str = "bearer"
 
 
+# Emails are treated case-insensitively: they're normalized to lowercase on
+# both signup and login so "User@x.com" and "user@x.com" are the same account.
+def _normalize_email(email: str) -> str:
+    return email.strip().lower()
+
+
 @router.post("/signup", response_model=Token)
 def signup(user_in: UserCreate, session: Session = Depends(get_session)):
-    existing = session.exec(select(User).where(User.email == user_in.email)).first()
+    email = _normalize_email(user_in.email)
+    existing = session.exec(select(User).where(User.email == email)).first()
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
 
-    user = User(email=user_in.email, password_hash=get_password_hash(user_in.password))
+    user = User(email=email, password_hash=get_password_hash(user_in.password))
     session.add(user)
     session.commit()
     session.refresh(user)
@@ -34,7 +41,8 @@ def signup(user_in: UserCreate, session: Session = Depends(get_session)):
 
 @router.post("/login", response_model=Token)
 def login(user_in: UserCreate, session: Session = Depends(get_session)):
-    user = session.exec(select(User).where(User.email == user_in.email)).first()
+    email = _normalize_email(user_in.email)
+    user = session.exec(select(User).where(User.email == email)).first()
     if not user or not verify_password(user_in.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password"

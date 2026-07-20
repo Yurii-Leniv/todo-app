@@ -17,7 +17,7 @@ A simple, multi-user TODO application built as a learning project — a FastAPI 
 **Backend**
 - [FastAPI](https://fastapi.tiangolo.com/) — the web framework
 - [SQLModel](https://sqlmodel.tiangolo.com/) (SQLAlchemy + Pydantic) — ORM and data validation
-- SQLite — the database (a single file, zero setup)
+- SQLite for local dev (a single file, zero setup) / PostgreSQL in production
 - [python-jose](https://github.com/mpdavis/python-jose) — JWT creation/verification
 - [passlib](https://passlib.readthedocs.io/) + bcrypt — password hashing
 - [pytest](https://docs.pytest.org/) + pytest-mock — testing
@@ -39,7 +39,7 @@ A few choices worth explaining, especially if you're new to the codebase:
 
 - **Response schemas are separate from database models.** `Task`/`User` are the actual database tables, but the API never returns them directly — it returns `TaskRead`/`UserRead` instead. This keeps internal fields (like the password hash, or a task's `user_id`) from ever leaking into an API response, on purpose rather than by accident.
 - **JWT auth is hand-rolled, not from a third-party auth library.** We evaluated `fastapi-jwt-auth`, but it turned out to be unmaintained and incompatible with Pydantic v2. Since our auth needs are simple (sign a token, verify a token), a small `auth.py` using `python-jose` and `passlib` directly is easier to understand and has no hidden dependency risk.
-- **SQLite, not Postgres/MySQL.** For a project this size, a single-file database means anyone can clone the repo and run it with zero external setup — no database server to install or configure.
+- **SQLite locally, PostgreSQL in production.** Cloning the repo and running it needs zero database setup — it defaults to a local SQLite file. In production, the backend reads a `DATABASE_URL` env var and uses Postgres instead, so data survives restarts and redeploys (a free-tier container's SQLite file does not). The same SQLModel code works against both.
 - **Ownership checks return 404, not 403.** If you try to update or delete another user's task, the API responds as if it doesn't exist at all, rather than confirming it exists but isn't yours. This avoids leaking information about other users' data.
 - **Auth state lives in a React Context (`AuthProvider`), not a state management library.** The app's state needs are small enough that Context + a bit of `localStorage` for the JWT is simpler than pulling in Redux/Zustand/etc.
 
@@ -137,6 +137,7 @@ To stop everything: `Ctrl+C`, then `docker compose down`.
 | File | Variable | Description |
 |---|---|---|
 | `backend/.env` | `JWT_SECRET_KEY` | Secret used to sign JWTs. Keep this private and never commit it. |
+| `backend/.env` | `DATABASE_URL` | _Optional._ Postgres connection string. If unset, the backend uses a local SQLite file (`tasks.db`). Set in production for persistent data. |
 | `frontend/.env.local` | `NEXT_PUBLIC_API_URL` | Base URL the frontend uses to reach the backend API. |
 
 ## Testing
@@ -172,11 +173,11 @@ Backend on [Render](https://render.com/), frontend on [Vercel](https://vercel.co
 
 ### 1. Backend → Render
 
-1. In the Render dashboard: **New → Blueprint**, connect this repo. Render reads [`render.yaml`](render.yaml) and configures the service automatically (Docker build from `backend/Dockerfile`, a random `JWT_SECRET_KEY`).
+1. In the Render dashboard: **New → Blueprint**, connect this repo. Render reads [`render.yaml`](render.yaml) and provisions everything automatically: a free PostgreSQL database (`todo-db`), plus the backend web service (Docker build from `backend/Dockerfile`) with `DATABASE_URL` wired to that database and a random `JWT_SECRET_KEY`.
 2. Render will ask you to fill in `CORS_ORIGINS` — leave it as `http://localhost:3000` for now, you'll update it in step 3.
 3. Deploy, then note the service URL Render gives you (something like `https://todo-backend-xxxx.onrender.com`).
 
-**Known limitation:** SQLite lives inside the container's filesystem, which Render's free tier doesn't persist across restarts/redeploys — fine for a demo, but don't rely on it for real data without adding a paid persistent disk.
+**Note:** the backend uses PostgreSQL in production (via `DATABASE_URL`), so accounts and tasks persist across restarts and redeploys. Render's free Postgres tier is time-limited, so it's meant for demos, not long-term production data.
 
 ### 2. Frontend → Vercel
 
