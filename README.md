@@ -176,24 +176,28 @@ Every push also runs the full suite automatically via [GitHub Actions](.github/w
 
 Backend on [Render](https://render.com/), frontend on [Vercel](https://vercel.com/) — both have generous free tiers and deploy straight from this GitHub repo. Deploy the backend first; the frontend needs its URL.
 
-### 1. Backend → Render
+### 1. Database → Neon
 
-1. In the Render dashboard: **New → Blueprint**, connect this repo. Render reads [`render.yaml`](render.yaml) and provisions everything automatically: a free PostgreSQL database (`todo-db`), plus the backend web service (Docker build from `backend/Dockerfile`) with `DATABASE_URL` wired to that database and a random `JWT_SECRET_KEY`.
-2. Render will ask you to fill in `CORS_ORIGINS` — leave it as `http://localhost:3000` for now, you'll update it in step 3.
+Create a free PostgreSQL database on [Neon](https://neon.tech/): sign up, create a project, and copy the connection string it gives you (it looks like `postgresql://user:password@ep-xxxx.region.aws.neon.tech/neondb?sslmode=require`). You'll paste this into Render in the next step.
+
+### 2. Backend → Render
+
+1. In the Render dashboard: **New → Blueprint**, connect this repo. Render reads [`render.yaml`](render.yaml) and provisions the backend web service (Docker build from `backend/Dockerfile`) with a random `JWT_SECRET_KEY`.
+2. Render will ask you to fill in the manual env vars: set `DATABASE_URL` to your Neon connection string from step 1, and leave `CORS_ORIGINS` as `http://localhost:3000` for now (you'll update it in step 4).
 3. Deploy, then note the service URL Render gives you (something like `https://todo-backend-xxxx.onrender.com`).
 
-**Note:** the backend uses PostgreSQL in production (via `DATABASE_URL`), so accounts and tasks persist across restarts and redeploys. Render's free Postgres tier is time-limited, so it's meant for demos, not long-term production data.
+**Note:** the backend uses PostgreSQL in production (via `DATABASE_URL`), so accounts and tasks persist across restarts and redeploys — unlike a free-tier container's local SQLite file, which is wiped every time the service restarts.
 
-### 2. Frontend → Vercel
+### 3. Frontend → Vercel
 
 1. **New Project** in Vercel, import this repo.
 2. Set **Root Directory** to `frontend` (this repo has both apps side by side — Vercel needs to know which one to build).
-3. Add an environment variable: `NEXT_PUBLIC_API_URL` = your Render URL from step 1.
+3. Add an environment variable: `NEXT_PUBLIC_API_URL` = your Render URL from step 2.
 4. Deploy. Vercel gives you a URL like `https://your-app.vercel.app`.
 
-### 3. Connect them
+### 4. Connect them
 
-Back in Render, set the backend's `CORS_ORIGINS` env var to your Vercel URL from step 2, then redeploy the backend (Render redeploys automatically when you save an env var change).
+Back in Render, set the backend's `CORS_ORIGINS` env var to your Vercel URL from step 3, then redeploy the backend (Render redeploys automatically when you save an env var change).
 
 ## Links
 
