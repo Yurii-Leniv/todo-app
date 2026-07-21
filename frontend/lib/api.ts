@@ -60,6 +60,16 @@ export type Task = {
   title: string;
   done: boolean;
   priority: number;
+  due_date: string | null;
+  category: string | null;
+  position: number;
+};
+
+export type TaskInput = {
+  title: string;
+  priority: number;
+  due_date?: string | null;
+  category?: string | null;
 };
 
 type AuthResponse = {
@@ -73,6 +83,7 @@ export type TaskOrder = "asc" | "desc";
 export type TaskQuery = {
   search?: string;
   status?: TaskStatus;
+  category?: string | null;
   order?: TaskOrder | null;
 };
 
@@ -99,6 +110,7 @@ export function listTasks(query: TaskQuery = {}) {
   if (query.search) params.set("search", query.search);
   if (query.status && query.status !== "all")
     params.set("status", query.status);
+  if (query.category) params.set("category", query.category);
   if (query.order) {
     params.set("sort", "priority");
     params.set("order", query.order);
@@ -107,16 +119,18 @@ export function listTasks(query: TaskQuery = {}) {
   return apiFetch<Task[]>(`/tasks${qs ? `?${qs}` : ""}`);
 }
 
-export function createTask(title: string, priority: number) {
+export function createTask(input: TaskInput) {
   return apiFetch<Task>("/tasks", {
     method: "POST",
-    body: JSON.stringify({ title, priority }),
+    body: JSON.stringify(input),
   });
 }
 
 export function updateTask(
   id: number,
-  changes: Partial<Pick<Task, "title" | "done" | "priority">>,
+  changes: Partial<
+    Pick<Task, "title" | "done" | "priority" | "due_date" | "category">
+  >,
 ) {
   return apiFetch<Task>(`/tasks/${id}`, {
     method: "PATCH",
@@ -131,5 +145,12 @@ export function deleteTask(id: number) {
 export function deleteCompletedTasks() {
   return apiFetch<{ ok: boolean; deleted: number }>("/tasks/completed", {
     method: "DELETE",
+  });
+}
+
+export function reorderTasks(ids: number[]) {
+  return apiFetch<{ ok: boolean }>("/tasks/reorder", {
+    method: "PATCH",
+    body: JSON.stringify({ ids }),
   });
 }

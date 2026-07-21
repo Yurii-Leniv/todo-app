@@ -212,3 +212,110 @@ def test_delete_completed_only_affects_current_user(client, auth_headers):
 
 def test_delete_completed_without_a_token_is_rejected(client):
     assert client.delete("/tasks/completed").status_code == 401
+
+
+def test_create_task_with_due_date_and_category(client, auth_headers):
+    response = client.post(
+        "/tasks",
+        json={
+            "title": "Pay rent",
+            "priority": 5,
+            "due_date": "2030-01-15",
+            "category": "Finance",
+        },
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["due_date"] == "2030-01-15"
+    assert body["category"] == "Finance"
+
+
+def test_filter_by_category(client, auth_headers):
+    client.post(
+        "/tasks",
+        json={"title": "Work task", "priority": 5, "category": "Work"},
+        headers=auth_headers,
+    )
+    client.post(
+        "/tasks",
+        json={"title": "Home task", "priority": 5, "category": "Home"},
+        headers=auth_headers,
+    )
+
+    response = client.get("/tasks?category=Work", headers=auth_headers)
+
+    titles = [task["title"] for task in response.json()]
+    assert titles == ["Work task"]
+
+
+def test_new_tasks_keep_manual_creation_order_by_default(client, auth_headers):
+    for title in ["First", "Second", "Third"]:
+        client.post(
+            "/tasks", json={"title": title, "priority": 5}, headers=auth_headers
+        )
+
+    titles = [
+        task["title"] for task in client.get("/tasks", headers=auth_headers).json()
+    ]
+    assert titles == ["First", "Second", "Third"]
+
+
+def test_reorder_changes_the_default_order(client, auth_headers):
+    ids = [
+        client.post(
+            "/tasks", json={"title": t, "priority": 5}, headers=auth_headers
+        ).json()["id"]
+        for t in ["A", "B", "C"]
+    ]
+
+    response = client.patch(
+        "/tasks/reorder", json={"ids": [ids[2], ids[0], ids[1]]}, headers=auth_headers
+    )
+
+    assert response.status_code == 200
+    titles = [
+        task["title"] for task in client.get("/tasks", headers=auth_headers).json()
+    ]
+    assert titles == ["C", "A", "B"]
+
+
+def test_reorder_ignores_tasks_owned_by_other_users(client, auth_headers):
+    mine = client.post(
+        "/tasks", json={"title": "Mine", "priority": 5}, headers=auth_headers
+    ).json()
+
+    other_user = client.post(
+        "/auth/signup",
+        json={"email": "other@example.com", "password": "password123"},
+    ).json()
+    other_headers = {"Authorization": f"Bearer {other_user['access_token']}"}
+    theirs = client.post(
+        "/tasks", json={"title": "Theirs", "priority": 5}, headers=other_headers
+    ).json()
+
+    # Passing someone else's id must not touch their task.
+    response = client.patch(
+        "/tasks/reorder", json={"ids": [theirs["id"], mine["id"]]}, headers=auth_headers
+    )
+
+    assert response.status_code == 200
+    their_titles = [
+        task["title"] for task in client.get("/tasks", headers=other_headers).json()
+    ]
+    assert their_titles == ["Theirs"]
+
+
+def test_update_can_set_and_clear_due_date(client, auth_headers):
+    task = client.post(
+        "/tasks",
+        json={"title": "Task", "priority": 5, "due_date": "2030-06-01"},
+        headers=auth_headers,
+    ).json()
+
+    cleared = client.patch(
+        f"/tasks/{task['id']}", json={"due_date": None}, headers=auth_headers
+    ).json()
+
+    assert cleared["due_date"] is None

@@ -6,20 +6,25 @@ describe("TaskForm", () => {
   test("submits the entered title and priority", async () => {
     const user = userEvent.setup();
     const onCreate = jest.fn().mockResolvedValue(undefined);
-    render(<TaskForm onCreate={onCreate} />);
+    render(<TaskForm categories={[]} onCreate={onCreate} />);
 
     await user.type(screen.getByPlaceholderText("New task..."), "Buy milk");
     await user.clear(screen.getByTitle("Priority (1-10)"));
     await user.type(screen.getByTitle("Priority (1-10)"), "8");
     await user.click(screen.getByRole("button", { name: "Add" }));
 
-    expect(onCreate).toHaveBeenCalledWith("Buy milk", 8);
+    expect(onCreate).toHaveBeenCalledWith({
+      title: "Buy milk",
+      priority: 8,
+      due_date: null,
+      category: null,
+    });
   });
 
   test("clears the form after a successful submit", async () => {
     const user = userEvent.setup();
     const onCreate = jest.fn().mockResolvedValue(undefined);
-    render(<TaskForm onCreate={onCreate} />);
+    render(<TaskForm categories={[]} onCreate={onCreate} />);
 
     const titleInput = screen.getByPlaceholderText(
       "New task...",
@@ -33,7 +38,7 @@ describe("TaskForm", () => {
   test("does not submit when the title is empty", async () => {
     const user = userEvent.setup();
     const onCreate = jest.fn();
-    render(<TaskForm onCreate={onCreate} />);
+    render(<TaskForm categories={[]} onCreate={onCreate} />);
 
     await user.click(screen.getByRole("button", { name: "Add" }));
 
@@ -46,7 +51,7 @@ describe("TaskForm", () => {
     const onCreate = jest.fn(
       () => new Promise<void>((resolve) => (resolveCreate = resolve)),
     );
-    render(<TaskForm onCreate={onCreate} />);
+    render(<TaskForm categories={[]} onCreate={onCreate} />);
 
     await user.type(screen.getByPlaceholderText("New task..."), "Buy milk");
     await user.click(screen.getByRole("button", { name: "Add" }));

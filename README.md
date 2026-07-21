@@ -10,7 +10,11 @@ A simple, multi-user TODO application built as a learning project — a FastAPI 
 - **Search** — filter tasks by title as you type (debounced, so it doesn't spam the API on every keystroke).
 - **Status filter** — show all tasks, only done, or only undone.
 - **Sorting** — sort tasks by priority, ascending or descending.
-- **Polished UI** — loading states, delete confirmation, and small animations when tasks are added or removed.
+- **Due dates** — give a task a deadline; overdue tasks are highlighted.
+- **Categories** — tag tasks with a free-text category (with suggestions) and filter by it.
+- **Drag-and-drop ordering** — reorder tasks by dragging; the manual order is saved and persists.
+- **Clear completed** — remove all finished tasks at once.
+- **Polished UI** — responsive (mobile-friendly), loading states, delete confirmation, and small animations when tasks are added or removed.
 
 ## Tech Stack
 
@@ -26,6 +30,7 @@ A simple, multi-user TODO application built as a learning project — a FastAPI 
 **Frontend**
 - [Next.js 16](https://nextjs.org/) (App Router) + React 19 + TypeScript
 - [Tailwind CSS v4](https://tailwindcss.com/) — styling
+- [dnd-kit](https://dndkit.com/) — drag-and-drop task reordering
 - [Jest](https://jestjs.io/) + [React Testing Library](https://testing-library.com/react) — component tests
 - [Cypress](https://www.cypress.io/) — end-to-end tests
 - ESLint + Prettier — linting and formatting

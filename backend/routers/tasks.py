@@ -1,7 +1,8 @@
 from typing import Literal, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Session, select
+from sqlalchemy import func
+from sqlmodel import Session, SQLModel, select
 
 from auth import get_current_user
 from database import get_session
@@ -10,13 +11,23 @@ from models import Task, TaskCreate, TaskRead, TaskUpdate, User
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 
+class ReorderRequest(SQLModel):
+    ids: list[int]
+
+
 @router.post("", response_model=TaskRead)
 def create_task(
     task: TaskCreate,
     session: Session = Depends(get_session),
     user: User = Depends(get_current_user),
 ):
-    db_task = Task.model_validate(task, update={"user_id": user.id})
+    # New tasks go to the end of the manual (drag-and-drop) order.
+    max_position = session.exec(
+        select(func.max(Task.position)).where(Task.user_id == user.id)
+    ).one()
+    db_task = Task.model_validate(
+        task, update={"user_id": user.id, "position": (max_position or 0) + 1}
+    )
     session.add(db_task)
     session.commit()
     session.refresh(db_task)
@@ -27,6 +38,7 @@ def create_task(
 def list_tasks(
     search: Optional[str] = None,
     status: Optional[Literal["done", "undone"]] = None,
+    category: Optional[str] = None,
     sort: Optional[Literal["priority"]] = None,
     order: Literal["asc", "desc"] = "asc",
     session: Session = Depends(get_session),
@@ -42,12 +54,39 @@ def list_tasks(
     elif status == "undone":
         query = query.where(Task.done.is_(False))
 
+    if category:
+        query = query.where(Task.category == category)
+
     if sort == "priority":
         query = query.order_by(
             Task.priority.desc() if order == "desc" else Task.priority.asc()
         )
+    else:
+        # Default view respects the user's manual drag-and-drop order.
+        query = query.order_by(Task.position.asc(), Task.id.asc())
 
     return session.exec(query).all()
+
+
+# Declared before the /{task_id} route: otherwise FastAPI would try to parse
+# "reorder" as the int task_id and reject the request with 422.
+@router.patch("/reorder")
+def reorder_tasks(
+    payload: ReorderRequest,
+    session: Session = Depends(get_session),
+    user: User = Depends(get_current_user),
+):
+    owned = session.exec(
+        select(Task).where(Task.user_id == user.id, Task.id.in_(payload.ids))
+    ).all()
+    task_by_id = {task.id: task for task in owned}
+    for index, task_id in enumerate(payload.ids):
+        task = task_by_id.get(task_id)
+        if task is not None:
+            task.position = index
+            session.add(task)
+    session.commit()
+    return {"ok": True}
 
 
 @router.patch("/{task_id}", response_model=TaskRead)

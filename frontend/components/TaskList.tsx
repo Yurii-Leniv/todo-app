@@ -1,8 +1,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import * as api from "@/lib/api";
-import { Task, TaskOrder, TaskStatus } from "@/lib/api";
+import { Task, TaskInput, TaskOrder, TaskStatus } from "@/lib/api";
 import TaskForm from "./TaskForm";
 import TaskItem from "./TaskItem";
 import SearchBar from "./SearchBar";
@@ -15,22 +30,43 @@ const REMOVE_ANIMATION_MS = 200;
 
 export default function TaskList() {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<TaskStatus>("all");
+  const [category, setCategory] = useState("");
   const [order, setOrder] = useState<TaskOrder | null>(null);
 
   const [pendingIds, setPendingIds] = useState<Set<number>>(new Set());
   const [removingIds, setRemovingIds] = useState<Set<number>>(new Set());
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  // Grows monotonically so the category dropdown/suggestions stay stable even
+  // while a category filter narrows the visible task list.
+  function rememberCategories(items: Task[]) {
+    setCategories((prev) => {
+      const set = new Set(prev);
+      for (const task of items) if (task.category) set.add(task.category);
+      return Array.from(set).sort();
+    });
+  }
 
   useEffect(() => {
     async function fetchTasks() {
       setLoading(true);
       setError(null);
       try {
-        setTasks(await api.listTasks({ search, status, order }));
+        const items = await api.listTasks({ search, status, category, order });
+        setTasks(items);
+        rememberCategories(items);
       } catch {
         setError("Failed to load tasks");
       } finally {
@@ -38,11 +74,12 @@ export default function TaskList() {
       }
     }
     fetchTasks();
-  }, [search, status, order]);
+  }, [search, status, category, order]);
 
-  async function handleCreate(title: string, priority: number) {
-    const task = await api.createTask(title, priority);
+  async function handleCreate(input: TaskInput) {
+    const task = await api.createTask(input);
     setTasks((prev) => [...prev, task]);
+    rememberCategories([task]);
   }
 
   async function handleToggleDone(task: Task) {
@@ -92,11 +129,27 @@ export default function TaskList() {
     }
   }
 
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    setTasks((prev) => {
+      const oldIndex = prev.findIndex((t) => t.id === active.id);
+      const newIndex = prev.findIndex((t) => t.id === over.id);
+      const next = arrayMove(prev, oldIndex, newIndex);
+      api
+        .reorderTasks(next.map((t) => t.id))
+        .catch(() => setError("Failed to save the new order"));
+      return next;
+    });
+  }
+
   const hasCompleted = tasks.some((task) => task.done);
+  // Manual drag ordering only makes sense in the unfiltered, unsorted view.
+  const canReorder = !search && status === "all" && !category && !order;
 
   return (
     <div className="mx-auto max-w-2xl">
-      <TaskForm onCreate={handleCreate} />
+      <TaskForm categories={categories} onCreate={handleCreate} />
 
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <SearchBar onSearch={setSearch} />
@@ -105,6 +158,23 @@ export default function TaskList() {
           <SortButtons value={order} onChange={setOrder} />
         </div>
       </div>
+
+      {categories.length > 0 && (
+        <div className="mb-4">
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="w-full rounded-xl border border-white/60 bg-white/80 px-4 py-2.5 text-sm shadow-sm backdrop-blur-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 sm:w-auto"
+          >
+            <option value="">All categories</option>
+            {categories.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {error && (
         <p className="mb-4 text-sm font-medium text-red-600">{error}</p>
@@ -128,18 +198,30 @@ export default function TaskList() {
           No tasks found.
         </p>
       ) : (
-        <ul className="space-y-3">
-          {tasks.map((task) => (
-            <TaskItem
-              key={task.id}
-              task={task}
-              pending={pendingIds.has(task.id)}
-              removing={removingIds.has(task.id)}
-              onToggleDone={handleToggleDone}
-              onDelete={handleDelete}
-            />
-          ))}
-        </ul>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={tasks.map((t) => t.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <ul className="space-y-3">
+              {tasks.map((task) => (
+                <TaskItem
+                  key={task.id}
+                  task={task}
+                  pending={pendingIds.has(task.id)}
+                  removing={removingIds.has(task.id)}
+                  draggable={canReorder}
+                  onToggleDone={handleToggleDone}
+                  onDelete={handleDelete}
+                />
+              ))}
+            </ul>
+          </SortableContext>
+        </DndContext>
       )}
     </div>
   );
