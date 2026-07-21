@@ -18,8 +18,6 @@ class Token(SQLModel):
     token_type: str = "bearer"
 
 
-# Emails are treated case-insensitively: they're normalized to lowercase on
-# both signup and login so "User@x.com" and "user@x.com" are the same account.
 def _normalize_email(email: str) -> str:
     return email.strip().lower()
 

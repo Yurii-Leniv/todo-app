@@ -27,7 +27,6 @@ function renderItem(overrides: Overrides = {}) {
     onDelete: jest.fn(),
     ...overrides,
   };
-  // useSortable needs a DndContext/SortableContext around it.
   return render(
     <DndContext>
       <SortableContext items={[props.task.id]}>

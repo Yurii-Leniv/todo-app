@@ -14,7 +14,6 @@ class Task(SQLModel, table=True):
     priority: int = Field(default=5, ge=1, le=10)
     due_date: Optional[date] = Field(default=None)
     category: Optional[str] = Field(default=None)
-    # Manual ordering for drag-and-drop; the client reorders via /tasks/reorder.
     position: int = Field(default=0, index=True)
     user_id: Optional[int] = Field(default=None, foreign_key="users.id")
 

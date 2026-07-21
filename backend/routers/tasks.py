@@ -21,7 +21,6 @@ def create_task(
     session: Session = Depends(get_session),
     user: User = Depends(get_current_user),
 ):
-    # New tasks go to the end of the manual (drag-and-drop) order.
     max_position = session.exec(
         select(func.max(Task.position)).where(Task.user_id == user.id)
     ).one()
@@ -62,14 +61,11 @@ def list_tasks(
             Task.priority.desc() if order == "desc" else Task.priority.asc()
         )
     else:
-        # Default view respects the user's manual drag-and-drop order.
         query = query.order_by(Task.position.asc(), Task.id.asc())
 
     return session.exec(query).all()
 
 
-# Declared before the /{task_id} route: otherwise FastAPI would try to parse
-# "reorder" as the int task_id and reject the request with 422.
 @router.patch("/reorder")
 def reorder_tasks(
     payload: ReorderRequest,
@@ -112,8 +108,6 @@ def update_task(
     return db_task
 
 
-# Declared before the /{task_id} route: otherwise FastAPI would try to parse
-# "completed" as the int task_id and reject the request with 422.
 @router.delete("/completed")
 def delete_completed_tasks(
     session: Session = Depends(get_session),

@@ -49,8 +49,6 @@ export default function TaskList() {
     }),
   );
 
-  // Grows monotonically so the category dropdown/suggestions stay stable even
-  // while a category filter narrows the visible task list.
   function rememberCategories(items: Task[]) {
     setCategories((prev) => {
       const set = new Set(prev);
@@ -144,7 +142,6 @@ export default function TaskList() {
   }
 
   const hasCompleted = tasks.some((task) => task.done);
-  // Manual drag ordering only makes sense in the unfiltered, unsorted view.
   const canReorder = !search && status === "all" && !category && !order;
 
   return (

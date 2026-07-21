@@ -295,7 +295,6 @@ def test_reorder_ignores_tasks_owned_by_other_users(client, auth_headers):
         "/tasks", json={"title": "Theirs", "priority": 5}, headers=other_headers
     ).json()
 
-    # Passing someone else's id must not touch their task.
     response = client.patch(
         "/tasks/reorder", json={"ids": [theirs["id"], mine["id"]]}, headers=auth_headers
     )
