@@ -1,12 +1,15 @@
 import os
 
+from dotenv import load_dotenv
 from sqlalchemy import inspect, text
 from sqlmodel import SQLModel, Session, create_engine
 
+# Load .env before reading DATABASE_URL, since this module is imported before
+# any other module calls load_dotenv().
+load_dotenv()
+
 DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./tasks.db")
 
-# Render/Neon hand out URLs like "postgres://..." or "postgresql://..."; point
-# them at the psycopg (v3) driver, which ships wheels for our Python version.
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg://", 1)
 elif DATABASE_URL.startswith("postgresql://"):
@@ -19,10 +22,6 @@ connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite")
 engine = create_engine(DATABASE_URL, connect_args=connect_args)
 
 
-# Columns added after the first release. create_all() only creates missing
-# tables, never alters existing ones, so we add these by hand — idempotently,
-# preserving data — for databases created before they existed. Works on both
-# SQLite and Postgres.
 _ADDED_TASK_COLUMNS = {
     "due_date": "ALTER TABLE task ADD COLUMN due_date DATE",
     "category": "ALTER TABLE task ADD COLUMN category VARCHAR",
